@@ -38,6 +38,7 @@ export default function vitePluginPugI18n({
 
     // Emit files on generateBundle
     async generateBundle() {
+      // Initalize I18n
       const initI18n = () => {
         const resources = {};
         for (const [lang, json] of langMap.entries()) {
@@ -54,17 +55,23 @@ export default function vitePluginPugI18n({
           resources,
         });
       };
+
+      // Generate all language versions for a page
       const transformPage = async (page) => {
         const template = await fs.promises.readFile(page, "utf-8");
         const compiledTemplate = pug.compile(template, options);
+        // Get the relative path from actual path to each page.
+        // And replace the extension to `html`
         const relativePath = path
           .relative(pages.root, page)
           .replace(/\.pug$/, ".html");
         for (const langCode of langMap.keys()) {
+          // Compiled HTML source
           const source = compiledTemplate({
             __: i18next.getFixedT(langCode),
             ...locals,
           });
+          // Emit as asset and specify filename
           this.emitFile({
             type: "asset",
             fileName: path.normalize(`${langCode}/${relativePath}`),
@@ -72,6 +79,8 @@ export default function vitePluginPugI18n({
           });
         }
       };
+
+      // Get works done here
       initI18n();
       await Promise.all(pagesFound.map(transformPage));
     },
