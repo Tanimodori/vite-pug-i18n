@@ -31,7 +31,7 @@ export default function vitePluginPugI18n({
       const loadLang = async (lang) => {
         const langCode = path.basename(lang, ".json");
         const langJson = await fs.promises.readFile(lang, "utf-8");
-        langMap.set(langCode, langJson);
+        langMap.set(langCode, JSON.parse(langJson));
       };
       await Promise.all([loadPages(), loadLangs()]);
     },
@@ -41,8 +41,8 @@ export default function vitePluginPugI18n({
       // Initalize I18n
       const initI18n = () => {
         const resources = {};
-        for (const [lang, json] of langMap.entries()) {
-          resources[lang] = { translation: JSON.parse(json) };
+        for (const [langCode, langObject] of langMap.entries()) {
+          resources[langCode] = { translation: langObject };
         }
         i18next.use(LanguageDetector).init({
           fallbackLng: langMap.keys(),
