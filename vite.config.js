@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
-import vitePluginPugI18n from "./plugin/pug";
+import vitePluginPugI18n from "./plugins/pug";
 
 export default defineConfig({
   plugins: [
