@@ -22,10 +22,10 @@ export default function vitePluginPugI18n({
     // Glob pages and langs on buildStart
     async buildStart() {
       const loadPages = async () => {
-        pagesFound = await glob(pages.pattern);
+        pagesFound = await glob(pages.glob);
       };
       const loadLangs = async () => {
-        langsFound = await glob(langs.pattern);
+        langsFound = await glob(langs.glob);
         await Promise.all(langsFound.map(loadLang));
       };
       const loadLang = async (lang) => {
