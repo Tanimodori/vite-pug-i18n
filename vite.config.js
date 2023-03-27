@@ -9,7 +9,7 @@ export default defineConfig({
         glob: "./src/pages/**/*.pug",
         root: resolve(__dirname, "src/pages"),
       },
-      i18n: {
+      langs: {
         glob: "./src/language/*.json",
       },
       locals: {},
