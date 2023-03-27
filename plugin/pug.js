@@ -29,7 +29,7 @@ export default function vitePluginPugI18n({
         await Promise.all(langsFound.map(loadLang));
       };
       const loadLang = async (lang) => {
-        const langCode = path.basename(lang);
+        const langCode = path.basename(lang, ".json");
         const langJson = await fs.promises.readFile(lang, "utf-8");
         langMap.set(langCode, langJson);
       };
