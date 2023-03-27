@@ -45,8 +45,8 @@ export default function vitePluginPugI18n({
           resources[langCode] = { translation: langObject };
         }
         i18next.use(LanguageDetector).init({
-          fallbackLng: langMap.keys(),
-          supportedLngs: langsFound,
+          fallbackLng: "en",
+          supportedLngs: [...langMap.keys()],
           detection: {
             order: ["querystring", "navigator", "htmlTag", "path"],
             lookupQuerystring: "lng",
