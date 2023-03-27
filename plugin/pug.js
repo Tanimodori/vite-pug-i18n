@@ -12,8 +12,8 @@ export default function vitePluginPugI18n({
   options = {},
 }) {
   const langMap = new Map();
-  const langsFound = [];
-  const pagesFound = [];
+  let langsFound = [];
+  let pagesFound = [];
 
   return {
     name: "vite-plugin-pug-i18n",
