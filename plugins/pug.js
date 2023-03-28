@@ -12,6 +12,8 @@ export default function vitePluginPugI18n({
   options = {},
 }) {
   const langMap = new Map();
+  const langMetaMap = new Map();
+  const pageMap = new Map();
   let langsFound = [];
   let pagesFound = [];
 
@@ -19,8 +21,8 @@ export default function vitePluginPugI18n({
     name: "vite-plugin-pug-i18n",
     apply: "build",
 
-    // Glob pages and langs on buildStart
-    async buildStart() {
+    async config(config) {
+      // Glob pages and langs
       const loadPages = async () => {
         pagesFound = await glob(pages.glob);
       };
@@ -34,55 +36,66 @@ export default function vitePluginPugI18n({
         langMap.set(langCode, JSON.parse(langJson));
       };
       await Promise.all([loadPages(), loadLangs()]);
+
+      const input = [];
+
+      // inject entry files here
+      for (const page of pagesFound) {
+        for (const langCode of langMap.keys()) {
+          const relativePath = path
+            .relative(pages.root, page)
+            .replace(/\.pug$/, ".html");
+          const distPath = path.normalize(`${langCode}/${relativePath}`);
+          input.push(distPath);
+          langMetaMap.set(distPath, { langCode, page });
+        }
+      }
+
+      return {
+        build: {
+          rollupOptions: { input },
+        },
+      };
     },
 
-    // Emit files on generateBundle
-    async generateBundle() {
-      // Initalize I18n
-      const initI18n = () => {
-        const resources = {};
-        for (const [langCode, langObject] of langMap.entries()) {
-          resources[langCode] = { translation: langObject };
-        }
-        i18next.use(LanguageDetector).init({
-          fallbackLng: "en",
-          supportedLngs: [...langMap.keys()],
-          detection: {
-            order: ["querystring", "navigator", "htmlTag", "path"],
-            lookupQuerystring: "lng",
-            lookupFromPathIndex: 0,
-          },
-          resources,
-        });
-      };
+    // Init I18n on buildStart
+    buildStart() {
+      const resources = {};
+      for (const [langCode, langObject] of langMap.entries()) {
+        resources[langCode] = { translation: langObject };
+      }
+      i18next.use(LanguageDetector).init({
+        fallbackLng: "en",
+        supportedLngs: [...langMap.keys()],
+        detection: {
+          order: ["querystring", "navigator", "htmlTag", "path"],
+          lookupQuerystring: "lng",
+          lookupFromPathIndex: 0,
+        },
+        resources,
+      });
+    },
 
-      // Generate all language versions for a page
-      const transformPage = async (page) => {
-        const template = await fs.promises.readFile(page, "utf-8");
-        const compiledTemplate = pug.compile(template, options);
-        // Get the relative path from actual path to each page.
-        // And replace the extension to `html`
-        const relativePath = path
-          .relative(pages.root, page)
-          .replace(/\.pug$/, ".html");
-        for (const langCode of langMap.keys()) {
-          // Compiled HTML source
-          const source = compiledTemplate({
-            __: i18next.getFixedT(langCode),
-            ...locals,
-          });
-          // Emit as asset and specify filename
-          this.emitFile({
-            type: "asset",
-            fileName: path.normalize(`${langCode}/${relativePath}`),
-            source,
-          });
-        }
-      };
+    // Transform pug to html on load
+    async load(id) {
+      let meta = langMetaMap.get(id);
+      if (!meta) return;
+      const { langCode, page } = meta;
 
-      // Get works done here
-      initI18n();
-      await Promise.all(pagesFound.map(transformPage));
+      // Get the compiled template
+      let template = pageMap.get(page);
+      if (!template) {
+        const rawTemplate = await fs.promises.readFile(page, "utf-8");
+        template = pug.compile(rawTemplate, options);
+        pageMap.set(page, template);
+      }
+
+      // Return the compiled template
+      const source = compiledTemplate({
+        __: i18next.getFixedT(langCode),
+        ...locals,
+      });
+      return source;
     },
   };
 }
