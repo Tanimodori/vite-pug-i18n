@@ -40,7 +40,7 @@ export default function vitePluginPugI18n({
       };
       await Promise.all([loadPages(), loadLangs()]);
 
-      const input = [];
+      const input = {};
 
       // inject entry files here
       for (const page of pagesFound) {
@@ -49,7 +49,7 @@ export default function vitePluginPugI18n({
             .relative(pages.root, page)
             .replace(/\.pug$/, ".html");
           const distPath = path.normalize(`${langCode}/${relativePath}`);
-          input.push(distPath);
+          input[distPath] = distPath;
           langMetaMap.set(distPath, { langCode, page });
         }
       }
