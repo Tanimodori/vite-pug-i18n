@@ -19,6 +19,7 @@ export default function vitePluginPugI18n({
 
   return {
     name: "vite-plugin-pug-i18n",
+    enforce: "pre",
     apply: "build",
 
     async config(config) {
@@ -76,10 +77,18 @@ export default function vitePluginPugI18n({
       });
     },
 
+    resolveId(id) {
+      if (langMetaMap.has(id)) {
+        return id;
+      }
+    },
+
     // Transform pug to html on load
     async load(id) {
       let meta = langMetaMap.get(id);
-      if (!meta) return;
+      if (!meta) {
+        return;
+      }
       const { langCode, page } = meta;
 
       // Get the compiled template
