@@ -24,7 +24,7 @@ export default function vitePluginPugI18n({
     enforce: "pre",
     apply: "build",
 
-    async config(config) {
+    async config() {
       // Glob pages and langs
       const loadPages = async () => {
         pagesFound = await glob(pages.glob);
