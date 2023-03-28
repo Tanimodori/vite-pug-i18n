@@ -3,6 +3,11 @@ import { resolve } from "path";
 import vitePluginPugI18n from "./plugins/pug";
 
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: [],
+    },
+  },
   plugins: [
     vitePluginPugI18n({
       pages: {
