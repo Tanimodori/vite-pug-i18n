@@ -100,7 +100,7 @@ export default function vitePluginPugI18n({
       }
 
       // Return the compiled template
-      const source = compiledTemplate({
+      const source = template({
         __: i18next.getFixedT(langCode),
         ...locals,
       });
